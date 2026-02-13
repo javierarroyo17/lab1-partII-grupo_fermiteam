@@ -4,7 +4,7 @@ from ..models import Provider, Barrel, Invoice, InvoiceLine
 from django.db.models import Sum
 
 
-
+#prueba
 class ProviderSerializer(serializers.ModelSerializer):
     liters_to_bill = serializers.SerializerMethodField()
 
