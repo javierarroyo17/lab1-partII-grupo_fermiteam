@@ -3,9 +3,8 @@ from rest_framework import serializers
 from ..models import Provider, Barrel, Invoice, InvoiceLine
 from django.db.models import Sum
 
-//Codigo
+
 class ProviderSerializer(serializers.ModelSerializer):
-    #camvbios realizados
     barrel_ids = serializers.PrimaryKeyRelatedField(
         many=True,
         read_only=True,
