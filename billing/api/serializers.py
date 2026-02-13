@@ -5,7 +5,12 @@ from django.db.models import Sum
 
 //Codigo
 class ProviderSerializer(serializers.ModelSerializer):
-    liters_to_bill = serializers.SerializerMethodField()
+    #camvbios realizados
+    barrel_ids = serializers.PrimaryKeyRelatedField(
+        many=True,
+        read_only=True,
+        source='barrels'
+    )
 
     class Meta:
         model = Provider
