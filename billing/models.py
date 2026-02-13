@@ -5,7 +5,7 @@ from django.db import models, transaction
 from django.db.models import Sum
 from django.core.validators import MinValueValidator
 
-
+#prueba
 class Provider(models.Model):
     name = models.CharField(max_length=255)
     address = models.TextField()
