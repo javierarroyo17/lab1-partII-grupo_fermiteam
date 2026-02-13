@@ -34,6 +34,7 @@ class Barrel(models.Model):
 class Invoice(models.Model):
     invoice_no = models.CharField(max_length=64, unique=True)
     issued_on = models.DateField()
+    provider = models.ForeignKey(Provider, related_name="invoices", on_delete=models.PROTECT)
 
     def __str__(self) -> str:
         return self.invoice_no
@@ -51,9 +52,14 @@ class Invoice(models.Model):
         if unit_price_per_liter <= 0:
             raise ValueError("unit_price must be > 0")
 
-        # Business rule from the prompt:
+        if barrel.provider_id != self.provider_id:
+            raise ValueError("barrel provider does not match invoice provider")
+
         if barrel.liters != liters:
             raise ValueError("liters must equal barrel.liters to bill the full barrel")
+
+        if barrel.billed:
+            raise ValueError("barrel already billed")
 
         new_line = InvoiceLine.objects.create(
             invoice=self,
@@ -72,7 +78,11 @@ class InvoiceLine(models.Model):
     barrel = models.ForeignKey(Barrel, related_name="invoice_lines", on_delete=models.PROTECT)
     liters = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     description = models.CharField(max_length=255)
-    unit_price = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))])
+    unit_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.01"))],
+    )
 
     def __str__(self) -> str:
         return f"Line {self.id} ({self.liters} L @ {self.unit_price})"
