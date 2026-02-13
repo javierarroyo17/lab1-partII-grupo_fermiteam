@@ -4,6 +4,7 @@ from ..models import Provider, Barrel, Invoice, InvoiceLine
 
 
 class ProviderSerializer(serializers.ModelSerializer):
+    #camvbios realizados
     barrel_ids = serializers.PrimaryKeyRelatedField(
         many=True,
         read_only=True,
