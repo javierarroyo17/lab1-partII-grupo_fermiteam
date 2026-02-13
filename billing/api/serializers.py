@@ -2,7 +2,7 @@ from decimal import Decimal
 from rest_framework import serializers
 from ..models import Provider, Barrel, Invoice, InvoiceLine
 
-
+#prueba
 class ProviderSerializer(serializers.ModelSerializer):
     barrel_ids = serializers.PrimaryKeyRelatedField(
         many=True,
