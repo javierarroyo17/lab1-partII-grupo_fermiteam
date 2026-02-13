@@ -2,7 +2,7 @@ from decimal import Decimal
 from rest_framework import serializers
 from ..models import Provider, Barrel, Invoice, InvoiceLine
 
-
+//Codigo
 class ProviderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Provider
