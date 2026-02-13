@@ -62,10 +62,11 @@ class InvoiceLineCreateSerializer(serializers.Serializer):
 
 class InvoiceSerializer(serializers.ModelSerializer):
     lines = InvoiceLineNestedSerializer(many=True, read_only=True)
+    total_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Invoice
-        fields = ["id", "invoice_no", "issued_on", "lines"]
+        fields = ["id", "invoice_no", "issued_on", "lines", "total_amount"]
 
     #hecho por Feria round 1: 
     def get_total_amount(self, obj: Invoice) -> Decimal:
