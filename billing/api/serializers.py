@@ -4,15 +4,33 @@ from ..models import Provider, Barrel, Invoice, InvoiceLine
 
 
 class ProviderSerializer(serializers.ModelSerializer):
-    barrel_ids = serializers.PrimaryKeyRelatedField(
-        many=True,
-        read_only=True,
-        source='barrels'
-    )
+    billed_barrels = serializers.SerializerMethodField()
+    barrels_to_bill = serializers.SerializerMethodField()
 
     class Meta:
         model = Provider
-        fields = ["id", "name", "address", "tax_id"]
+        fields = [
+            "id",
+            "name",
+            "address",
+            "tax_id",
+            "billed_barrels",
+            "barrels_to_bill",
+        ]
+
+    def get_billed_barrels(self, obj):
+        return list(
+            Barrel.objects
+            .filter(provider=obj, billed=True)
+            .values_list("id", flat=True)
+        )
+
+    def get_barrels_to_bill(self, obj):
+        return list(
+            Barrel.objects
+            .filter(provider=obj, billed=False)
+            .values_list("id", flat=True)
+        )
 
 
 class BarrelSerializer(serializers.ModelSerializer):
@@ -22,8 +40,6 @@ class BarrelSerializer(serializers.ModelSerializer):
 
 
 class InvoiceLineNestedSerializer(serializers.ModelSerializer):
-    # Requirement: return invoice lines WITHOUT the barrel object included.
-    # We expose barrel_id only (not nested barrel details).
     barrel_id = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -53,12 +69,12 @@ class InvoiceLineCreateSerializer(serializers.Serializer):
 
 class InvoiceSerializer(serializers.ModelSerializer):
     lines = InvoiceLineNestedSerializer(many=True, read_only=True)
+    total_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Invoice
-        fields = ["id", "invoice_no", "issued_on", "lines"]
+        fields = ["id", "invoice_no", "issued_on", "lines", "total_amount"]
 
-    #hecho por Feria round 1: 
     def get_total_amount(self, obj: Invoice) -> Decimal:
         total = Decimal("0.00")
         for line in obj.lines.all():
