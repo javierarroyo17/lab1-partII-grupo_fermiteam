@@ -3,7 +3,7 @@ from rest_framework import serializers
 from ..models import Provider, Barrel, Invoice, InvoiceLine
 from django.db.models import Sum
 
-
+#prueba
 class ProviderSerializer(serializers.ModelSerializer):
     barrel_ids = serializers.PrimaryKeyRelatedField(
         many=True,
