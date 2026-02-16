@@ -3,7 +3,7 @@ from rest_framework import serializers
 from ..models import Provider, Barrel, Invoice, InvoiceLine
 from django.db.models import Sum
 
-#prueba
+
 class ProviderSerializer(serializers.ModelSerializer):
     barrel_ids = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -11,15 +11,25 @@ class ProviderSerializer(serializers.ModelSerializer):
         source='barrels'
     )
 
+    billed_barrels = serializers.SerializerMethodField()
+    barrels_to_bill = serializers.SerializerMethodField()
+
+    liters_to_bill = serializers.SerializerMethodField()
+
     class Meta:
         model = Provider
-        fields = ["id", "name", "address", "tax_id", "liters_to_bill"]
+        fields = [
+            "id", "name", "address", "tax_id", "liters_to_bill", "barrel_ids", "billed_barrels", "barrels_to_bill"]
 
     def get_liters_to_bill(self, obj):
         total = obj.barrels.filter(billed=False).aggregate(total=Sum("liters"))["total"]
         return total or 0
 
+    def get_billed_barrels(self, obj):
+        return obj.barrels.filter(billed=True).values_list('id', flat=True)
 
+    def get_barrels_to_bill(self, obj):
+        return obj.barrels.filter(billed=False).values_list('id', flat=True)
 
 
 class BarrelSerializer(serializers.ModelSerializer):
@@ -71,7 +81,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = ["id", "invoice_no", "issued_on", "lines", "total_amount"]
 
-    #hecho por Feria round 1: 
+    #hecho por Feria round 1:
     def get_total_amount(self, obj: Invoice) -> Decimal:
         total = Decimal("0.00")
         for line in obj.lines.all():
