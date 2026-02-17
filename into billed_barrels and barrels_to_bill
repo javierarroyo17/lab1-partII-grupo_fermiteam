@@ -1,0 +1,62 @@
+[1mdiff --git a/billing/api/serializers.py b/billing/api/serializers.py[m
+[1mindex 6572a05..649b21f 100644[m
+[1m--- a/billing/api/serializers.py[m
+[1m+++ b/billing/api/serializers.py[m
+[36m@@ -8,18 +8,38 @@[m [mclass ProviderSerializer(serializers.ModelSerializer):[m
+     barrel_ids = serializers.PrimaryKeyRelatedField([m
+         many=True,[m
+         read_only=True,[m
+[31m-        source='barrels'[m
+[32m+[m[32m        source="barrels",[m
+     )[m
+[32m+[m[32m    liters_to_bill = serializers.SerializerMethodField()[m
+[32m+[m[32m    billed_barrels = serializers.SerializerMethodField()[m
+[32m+[m[32m    barrels_to_bill = serializers.SerializerMethodField()[m
+ [m
+     class Meta:[m
+         model = Provider[m
+[31m-        fields = ["id", "name", "address", "tax_id", "liters_to_bill"][m
+[32m+[m[32m        fields = [[m
+[32m+[m[32m            "id",[m
+[32m+[m[32m            "name",[m
+[32m+[m[32m            "address",[m
+[32m+[m[32m            "tax_id",[m
+[32m+[m[32m            "barrel_ids",[m
+[32m+[m[32m            "liters_to_bill",[m
+[32m+[m[32m            "billed_barrels",[m
+[32m+[m[32m            "barrels_to_bill",[m
+[32m+[m[32m        ][m
+ [m
+     def get_liters_to_bill(self, obj):[m
+         total = obj.barrels.filter(billed=False).aggregate(total=Sum("liters"))["total"][m
+         return total or 0[m
+ [m
+[32m+[m[32m    def get_billed_barrels(self, obj):[m
+[32m+[m[32m        return list([m
+[32m+[m[32m            obj.barrels.filter(billed=True).values_list("id", flat=True)[m
+[32m+[m[32m        )[m
+ [m
+[32m+[m[32m    def get_barrels_to_bill(self, obj):[m
+[32m+[m[32m        return list([m
+[32m+[m[32m            obj.barrels.filter(billed=False).values_list("id", flat=True)[m
+[32m+[m[32m        )[m
+ [m
+ [m
+ class BarrelSerializer(serializers.ModelSerializer):[m
+[36m@@ -29,8 +49,6 @@[m [mclass BarrelSerializer(serializers.ModelSerializer):[m
+ [m
+ [m
+ class InvoiceLineNestedSerializer(serializers.ModelSerializer):[m
+[31m-    # Requirement: return invoice lines WITHOUT the barrel object included.[m
+[31m-    # We expose barrel_id only (not nested barrel details).[m
+     barrel_id = serializers.IntegerField(read_only=True)[m
+ [m
+     class Meta:[m
+[36m@@ -71,7 +89,6 @@[m [mclass InvoiceSerializer(serializers.ModelSerializer):[m
+         model = Invoice[m
+         fields = ["id", "invoice_no", "issued_on", "lines", "total_amount"][m
+ [m
+[31m-    #hecho por Feria round 1: [m
+     def get_total_amount(self, obj: Invoice) -> Decimal:[m
+         total = Decimal("0.00")[m
+         for line in obj.lines.all():[m
