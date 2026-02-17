@@ -67,9 +67,6 @@ class Invoice(models.Model):
             raise ValueError("barrel provider does not match invoice provider")
 
         locked_barrel = Barrel.objects.select_for_update().get(pk=barrel.pk)
-
-        if locked_barrel.billed:
-            raise ValueError("barrel is already billed")
         if locked_barrel.is_totally_billed():
             raise ValueError("barrel is already billed")
 

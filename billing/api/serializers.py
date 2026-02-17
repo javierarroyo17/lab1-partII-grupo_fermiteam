@@ -59,7 +59,7 @@ class InvoiceLineCreateSerializer(serializers.Serializer):
     )
 
     def validate_barrel(self, barrel: Barrel) -> Barrel:
-        if barrel.billed:
+        if barrel.is_totally_billed():
             raise serializers.ValidationError("This barrel is already billed.")
         return barrel
 
