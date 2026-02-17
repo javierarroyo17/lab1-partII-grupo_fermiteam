@@ -1,11 +1,17 @@
 from decimal import Decimal
 from rest_framework import serializers
 from ..models import Provider, Barrel, Invoice, InvoiceLine
+from django.db.models import Sum
 
 
 class ProviderSerializer(serializers.ModelSerializer):
     billed_barrels = serializers.SerializerMethodField()
     barrels_to_bill = serializers.SerializerMethodField()
+
+    billed_barrels = serializers.SerializerMethodField()
+    barrels_to_bill = serializers.SerializerMethodField()
+
+    liters_to_bill = serializers.SerializerMethodField()
 
     class Meta:
         model = Provider
@@ -56,6 +62,11 @@ class InvoiceLineCreateSerializer(serializers.Serializer):
         decimal_places=2,
         min_value=Decimal("0.01"),
     )
+
+    def validate_barrel(self, barrel: Barrel) -> Barrel:
+        if barrel.is_totally_billed():
+            raise serializers.ValidationError("This barrel is already billed.")
+        return barrel
 
     def create(self, validated_data: dict) -> InvoiceLine:
         invoice = self.context["invoice"]
