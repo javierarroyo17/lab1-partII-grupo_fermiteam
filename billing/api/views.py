@@ -26,8 +26,13 @@ class ProviderViewSet(viewsets.ModelViewSet):
 class BarrelViewSet(viewsets.ModelViewSet):
     queryset = Barrel.objects.select_related("provider").all().order_by("id")
     serializer_class = BarrelSerializer
-    # Requirement: barrels endpoint without filters on billed/unbilled
-    filter_backends = []
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        oil_type = self.request.query_params.get("oil_type")
+        if oil_type:
+            qs = qs.filter(oil_type=oil_type)
+        return qs
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
